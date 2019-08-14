@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "outFile": "./cohort_manager/js-dist/cohort-manager.js",
+        "sourceMap": false,
+        "noImplicitAny": false,
+        "module": "AMD",
+        "moduleResolution": "node",
+        "target": "es6",
+        "jsx": "react"
+    },
+    "include": [
+        "cohort_manager/js-src/**/*"
+    ]
+}
