@@ -19,6 +19,8 @@ ${HTML(section_data['compiled_js'])}
                 'react-dom': 'https://unpkg.com/react-dom@16/umd/react-dom.development',
             },
         });
-        myRequire(['cohort-manager'], (f) => {console.trace(f);});
+        // Our library's JS module has been injected in to the HTML via a fragment,
+        // so we just require() it to initialize and run it:
+        myRequire(['cohort-manager', 'react', 'react-dom'], () => {console.trace('loaded');});
     })();
 </script>
