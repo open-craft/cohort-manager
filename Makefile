@@ -39,9 +39,7 @@ coverage: clean ## generate and view HTML coverage report
 
 js:  ## Compile javascript
 	./node_modules/.bin/tsc
-
-js-watch:  ## Compile javascript and watch for changes
-	./node_modules/.bin/tsc --watch
+	sed -i '1s/^/((define) => {/' cohort_manager/js-dist/cohort-manager.js && echo '}).call(this, define || RequireJS.define);' >> cohort_manager/js-dist/cohort-manager.js
 
 quality: ## check coding style with pycodestyle and pylint
 	pylint cohort_manager $(PROJECT_ROOT)setup.py

@@ -4,6 +4,8 @@
     </div>
 </div>
 <script>
+    // for some reason react and react-dom aren't injected unless define is globally defined after this point...
+    define = RequireJS.define;
     (() => {
         const myRequire = RequireJS.requirejs.config({
             context: 'cohort-manager', // Namespace these modules to not conflict with existing modules in edxapp
