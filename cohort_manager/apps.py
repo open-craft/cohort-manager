@@ -7,7 +7,7 @@ from __future__ import absolute_import, unicode_literals
 
 from django.apps import AppConfig
 
-from openedx.core.djangoapps.plugins.constants import PluginSettings, ProjectType, SettingsType
+from openedx.core.djangoapps.plugins.constants import PluginURLs, PluginSettings, ProjectType, SettingsType
 
 
 class CohortManagerAppConfig(AppConfig):
@@ -19,6 +19,11 @@ class CohortManagerAppConfig(AppConfig):
 
     name = 'cohort_manager'
     plugin_app = {
+        PluginURLs.CONFIG: {
+            ProjectType.LMS: {
+                PluginURLs.NAMESPACE: u'cohort-manager',
+            },
+        },
         PluginSettings.CONFIG: {
             ProjectType.LMS: {
                 SettingsType.COMMON: {PluginSettings.RELATIVE_PATH: 'settings'},

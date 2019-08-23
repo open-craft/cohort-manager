@@ -5,22 +5,5 @@ from openedx.core.djangolib.markup import HTML, Text
 %>
 
 <div id="cohort-manager-root">
-    <h3>Loading Cohort Manager...</h3>
+    <a href="/cohort-manager/">Click here to access</a>
 </div>
-
-<script>
-${HTML(section_data['compiled_js'])}
-
-    (() => {
-        const myRequire = RequireJS.requirejs.config({
-            context: 'cohort-manager', // Namespace these modules to not conflict with existing modules in edxapp
-            paths: {
-                'react': 'https://unpkg.com/react@16/umd/react.development',
-                'react-dom': 'https://unpkg.com/react-dom@16/umd/react-dom.development',
-            },
-        });
-        // Our library's JS module has been injected in to the HTML via a fragment,
-        // so we just require() it to initialize and run it:
-        myRequire(['cohort-manager', 'react', 'react-dom'], () => {console.trace('loaded');});
-    })();
-</script>
