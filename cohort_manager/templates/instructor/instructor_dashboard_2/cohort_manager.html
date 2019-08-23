@@ -11,6 +11,9 @@ from openedx.core.djangolib.markup import HTML, Text
 <script>
 ${HTML(section_data['compiled_js'])}
 
+    // can only get it to work by putting define in global namespace...
+    // This is NOT what we want to end up with
+    define = RequireJS.define;
     (() => {
         const myRequire = RequireJS.requirejs.config({
             context: 'cohort-manager', // Namespace these modules to not conflict with existing modules in edxapp
