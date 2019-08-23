@@ -1,4 +1,4 @@
-// doesn't work unless define is put into global namespace ¯\_(ツ)_/¯
+// doesn't work unless define is put into global namespace
 define = RequireJS.define;
 
 define("cohort-manager", ["require", "exports", "react", "react-dom"], function (require, exports, React, ReactDOM) {
