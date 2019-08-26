@@ -133,9 +133,14 @@ class CohortManager extends React.Component<Props, State> {
 
     render() {
         console.log(this.state);
-        let this_cohorts = [];
+        let this_cohorts_rows = [];
         for (let cohort of this.state.this_cohorts) {
-            this_cohorts.push(<li key={cohort.id}>{cohort.name}</li>);
+            this_cohorts_rows.push(
+                <tr key={cohort.id}>
+                    <td>{cohort.name}</td>
+                    <td>{cohort.assignment_type}</td>
+                </tr>
+            );
         }
 
         let from_cohorts = [];
@@ -143,18 +148,46 @@ class CohortManager extends React.Component<Props, State> {
             from_cohorts.push(<li key={cohort.id}>{cohort.name}</li>);
         }
 
+        const gridColumn = {
+            gridColumn: 1 / 2,
+            gridRow: 1,
+        };
+
+        const gridWrapper = {
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gridGap: '10px',
+        };
+
         return (
             <div>
-                <div>{this.state.status}</div>
-                <h2>{this.state.this_course}</h2>
-                <p>Cohorts:</p>
-                <ul>{this_cohorts}</ul>
-                <hr/>
-                <p>Import cohorts from:</p>
-                <input type="text" value={this.state.from_course} onChange={(ev) => this.handleFromCourseUpdate(ev)}/>
-                <button onClick={() => this.populateFromCohorts()}>Load cohorts list</button>
-                <ul>{from_cohorts}</ul>
-                <button onClick={() => this.importCohorts()}>Import cohorts into {this.state.this_course}</button>
+                <div>
+                    <h2>Cohort Importer</h2>
+                </div>
+                <div style={gridWrapper}>
+                    <div style={gridColumn}>
+                        <h3>{this.state.this_course}</h3>
+                        <p>Current cohorts:</p>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Assignment</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {this_cohorts_rows}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style={gridColumn}>
+                        <p>Import cohorts from:</p>
+                        <input type="text" placeholder="course-v1:edX+DemoX+Demo_Course" value={this.state.from_course} onChange={(ev) => this.handleFromCourseUpdate(ev)}/>
+                        <button onClick={() => this.populateFromCohorts()}>Load cohorts list</button>
+                        <ul>{from_cohorts}</ul>
+                        <button onClick={() => this.importCohorts()}>Import cohorts into {this.state.this_course}</button>
+                    </div>
+                </div>
             </div>
         );
     }
