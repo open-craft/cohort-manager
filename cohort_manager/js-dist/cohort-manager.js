@@ -6,7 +6,40 @@
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-define("cohort-manager", ["require", "exports", "react", "react-dom"], function (require, exports, React, ReactDOM) {
+define("Types", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("Components", ["require", "exports", "react"], function (require, exports, React) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const tableStyle = {
+        borderCollapse: 'collapse',
+        border: '1px solid',
+    };
+    const cellStyle = {
+        border: '1px solid',
+        padding: '5px',
+    };
+    class CohortTable extends React.PureComponent {
+        render() {
+            let cohorts_rows = [];
+            for (let cohort of this.props.cohorts) {
+                cohorts_rows.push(React.createElement("tr", { key: cohort.id },
+                    React.createElement("td", { style: cellStyle }, cohort.name),
+                    React.createElement("td", { style: cellStyle }, cohort.assignment_type)));
+            }
+            return (React.createElement("table", { style: tableStyle },
+                React.createElement("thead", null,
+                    React.createElement("tr", null,
+                        React.createElement("th", { style: cellStyle }, "Name"),
+                        React.createElement("th", { style: cellStyle }, "Assignment"))),
+                React.createElement("tbody", null, cohorts_rows)));
+        }
+    }
+    exports.CohortTable = CohortTable;
+});
+define("cohort-manager", ["require", "exports", "react", "react-dom", "Components"], function (require, exports, React, ReactDOM, Components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class CohortManager extends React.Component {
@@ -111,17 +144,6 @@ define("cohort-manager", ["require", "exports", "react", "react-dom"], function 
             });
         }
         render() {
-            console.log(this.state);
-            let this_cohorts_rows = [];
-            for (let cohort of this.state.this_cohorts) {
-                this_cohorts_rows.push(React.createElement("tr", { key: cohort.id },
-                    React.createElement("td", null, cohort.name),
-                    React.createElement("td", null, cohort.assignment_type)));
-            }
-            let from_cohorts = [];
-            for (let cohort of this.state.from_cohorts) {
-                from_cohorts.push(React.createElement("li", { key: cohort.id }, cohort.name));
-            }
             const gridColumn = {
                 gridColumn: 1 / 2,
                 gridRow: 1,
@@ -138,20 +160,19 @@ define("cohort-manager", ["require", "exports", "react", "react-dom"], function 
                     React.createElement("div", { style: gridColumn },
                         React.createElement("h3", null, this.state.this_course),
                         React.createElement("p", null, "Current cohorts:"),
-                        React.createElement("table", null,
-                            React.createElement("thead", null,
-                                React.createElement("tr", null,
-                                    React.createElement("th", null, "Name"),
-                                    React.createElement("th", null, "Assignment"))),
-                            React.createElement("tbody", null, this_cohorts_rows))),
+                        React.createElement(Components_1.CohortTable, { cohorts: this.state.this_cohorts })),
                     React.createElement("div", { style: gridColumn },
                         React.createElement("p", null, "Import cohorts from:"),
-                        React.createElement("input", { type: "text", placeholder: "course-v1:edX+DemoX+Demo_Course", value: this.state.from_course, onChange: (ev) => this.handleFromCourseUpdate(ev) }),
-                        React.createElement("button", { onClick: () => this.populateFromCohorts() }, "Load cohorts list"),
-                        React.createElement("ul", null, from_cohorts),
-                        React.createElement("button", { onClick: () => this.importCohorts() },
-                            "Import cohorts into ",
-                            this.state.this_course)))));
+                        React.createElement("p", null,
+                            React.createElement("input", { type: "text", placeholder: "course-v1:edX+DemoX+Demo_Course", value: this.state.from_course, onChange: (ev) => this.handleFromCourseUpdate(ev) }),
+                            React.createElement("button", { onClick: () => this.populateFromCohorts() }, "Load cohorts list")),
+                        React.createElement("p", null,
+                            React.createElement("button", { onClick: () => this.importCohorts() },
+                                "Import cohorts into ",
+                                this.state.this_course)),
+                        React.createElement("p", null, "Cohorts to be imported:"),
+                        React.createElement("p", null,
+                            React.createElement(Components_1.CohortTable, { cohorts: this.state.from_cohorts }))))));
         }
     }
     ReactDOM.render(React.createElement(CohortManager, null), document.getElementById("cohort-manager-root"));
