@@ -2,8 +2,9 @@
 <%!
 from django.utils.translation import ugettext as _
 from openedx.core.djangolib.markup import HTML, Text
+from urllib import urlencode
 %>
 
 <div id="cohort-manager-root">
-    <a href="/cohort-manager/">Click here to access</a>
+    <a href="/cohort-manager/?${urlencode({'course_id': section_data['course_id']})}">Click here to access</a>
 </div>
