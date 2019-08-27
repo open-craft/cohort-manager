@@ -103,8 +103,8 @@ setup(
         'lms.djangoapp': [
             'cohort_manager = cohort_manager.apps:CohortManagerAppConfig',
         ],
-        'lms.instructor_dashboard.section': [
-            'cohort_manager = cohort_manager.section:section',
+        'lms.instructor_dashboard.tab': [
+            'cohort_manager = cohort_manager.section:Tab',
         ],
     },
 )

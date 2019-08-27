@@ -7,25 +7,19 @@ from __future__ import absolute_import, unicode_literals
 
 import pkg_resources
 
-def section(course, access):
-    """ Provide data for the corresponding dashboard section """
-    course_key = course.id
+class Tab(object):
+    section_key = 'cohort_manager'
+    section_display_name = 'Cohort Manager'
+    priority = 0
 
-    section_data = {
-        # 'compiled_js': pkg_resources.resource_string('cohort_manager', 'js-dist/bundle.js'),
-        'section_key': 'cohort_manager',
-        'section_display_name': 'Cohort Manager',
-        'access': access,
-        'course_id': course_key,
-        'course_display_name': course.display_name_with_default,
-        'course_org': course.display_org_with_default,
-        'course_number': course.display_number_with_default,
-        'has_started': course.has_started(),
-        'has_ended': course.has_ended(),
-        'start_date': course.start,
-        'end_date': course.end,
-        'num_sections': len(course.children),
-        'list_instructor_tasks_url': 'https://example.com/',
-    }
+    def __init__(self, course, access):
+        self.access = access
+        self.course_id = course.id
 
-    return section_data
+    def to_dict(self):
+        return {
+            'section_key': self.section_key,
+            'section_display_name': self.section_display_name,
+            'course_id': self.course_id,
+            'access': self.access,
+        }
