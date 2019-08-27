@@ -17,6 +17,8 @@ endef
 export BROWSER_PYSCRIPT
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
+NODE_BIN_PATH := "./node_modules/.bin/"
+
 help: ## display this help message
 	@echo "Please use \`make <target>' where <target> is one of"
 	@perl -nle'print $& if m{^[a-zA-Z_-]+:.*?## .*$$}' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-25s\033[0m %s\n", $$1, $$2}'
@@ -38,18 +40,13 @@ coverage: clean ## generate and view HTML coverage report
 	$(BROWSER) htmlcov/index.html
 
 js:  ## Compile javascript
-	./node_modules/.bin/tsc
-	sed -i '1s/^/((define) => {/' cohort_manager/js-dist/cohort-manager.js && echo '}).call(this, define || RequireJS.define);' >> cohort_manager/js-dist/cohort-manager.js
+	./node_modules/.bin/tsc --noEmit
 
 quality: ## check coding style with pycodestyle and pylint
 	pylint cohort_manager $(PROJECT_ROOT)setup.py
 	pylint --py3k cohort_manager $(PROJECT_ROOT)setup.py
 	pycodestyle $(PROJECT_ROOT)cohort_manager $(PROJECT_ROOT)setup.py
 	isort --check-only --diff --recursive $(PROJECT_ROOT)cohort_manager $(PROJECT_ROOT)setup.py
-
-# requirements: ## install development environment requirements
-# 	pip install -qr requirements/pip-tools.txt
-# 	pip-sync requirements/dev.txt requirements/private.*
 
 # test target:
 # Meant to be run in LMS's virtualenv
@@ -62,7 +59,14 @@ test: clean  ## Run tests; run this from the lms-shell
 diff_cover: test ## find diff lines that need test coverage
 	diff-cover coverage.xml
 
-validate: quality test ## run tests and quality checks
+validate: quality js test ## run tests and quality checks
 
 selfcheck: ## check that the Makefile is well-formed
 	@echo "The Makefile is well-formed."
+
+format: ## format javascript source files
+	./node_modules/.bin/prettier --write "*.js"
+	./node_modules/.bin/prettier --write "cohort_manager/js-src/*.{ts,tsx}"
+
+bundle: js  ## bundle javascript
+	$(NODE_BIN_PATH)/rollup -c

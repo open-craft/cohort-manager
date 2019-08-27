@@ -37,5 +37,8 @@ class CohortManagerSpaView(EdxFragmentView):
         }
         html = render_to_string('cohort-manager.html', context)
         fragment = Fragment(html)
-        fragment.add_javascript(pkg_resources.resource_string('cohort_manager', 'js-dist/cohort-manager.js'))
+        # decoding with ignore here as a hack to avoid non-ascii text getting
+        # into the web-fragments library and crashing it
+        js_string = pkg_resources.resource_string('cohort_manager', 'js-dist/bundle.js').decode('ascii', 'ignore')
+        fragment.add_javascript(js_string)
         return fragment

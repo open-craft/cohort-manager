@@ -12,7 +12,7 @@ def section(course, access):
     course_key = course.id
 
     section_data = {
-        'compiled_js': pkg_resources.resource_string('cohort_manager', 'js-dist/cohort-manager.js'),
+        # 'compiled_js': pkg_resources.resource_string('cohort_manager', 'js-dist/bundle.js'),
         'section_key': 'cohort_manager',
         'section_display_name': 'Cohort Manager',
         'access': access,
