@@ -5,9 +5,13 @@ Cohort Manager Django application initialization.
 
 from __future__ import absolute_import, unicode_literals
 
-import pkg_resources
-
 class Tab(object):
+    """
+    Class that is injected into edx-platform and is called by the instructor dashboard.
+    The API is subject to change - will probably end up inheriting from some
+    ABC in the future, and hopefully will use something more structured than a
+    to_dict method.
+    """
     section_key = 'cohort_manager'
     section_display_name = 'Cohort Manager'
     priority = 0

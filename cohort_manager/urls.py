@@ -12,4 +12,3 @@ urlpatterns = [
         url(r'.*', views.CohortManagerSpaView.as_view()),
     ])),
 ]
-

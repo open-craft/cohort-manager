@@ -78,3 +78,6 @@ tests/__init__.py
 
 # Development task artifacts
 default.db
+
+# vscode specific config
+.vscode/*

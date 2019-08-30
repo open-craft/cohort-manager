@@ -29,7 +29,7 @@ class CohortManagerSpaView(EdxFragmentView):
             # 'disable_window_wrap': True,
         }
 
-    def render_to_fragment(self, request):
+    def render_to_fragment(self, request, **_kwargs):
         """
         Render the Cohort Manager single page app.
         """
