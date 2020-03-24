@@ -513,6 +513,30 @@
         }
     }
 
+    function getCohorts(courseId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let pageNumber = 1;
+            let results = [];
+            while (true) {
+                const response = yield fetch(`/api/cohorts/v1/courses/${courseId}/cohorts/?page_size=100&page=${pageNumber}`);
+                if (!response.ok) {
+                    if (response.status === 404 && pageNumber !== 1) {
+                        // This means that we've reached the end of the pagination, so break
+                        // cleanly.
+                        break;
+                    }
+                    console.log('Response not ok:', response);
+                    throw new Error(response.statusText);
+                }
+                const page = yield response.json();
+                console.log('page', page);
+                results = results.concat(page);
+                pageNumber += 1;
+            }
+            return results;
+        });
+    }
+
     class CohortManager extends react_2 {
         constructor(props) {
             super(props);
@@ -528,23 +552,13 @@
             this.setState({ from_course: event.target.value });
         }
         populateFromCohorts() {
-            const course_id = this.state.from_course;
-            fetch(`/api/cohorts/v1/courses/${course_id}/cohorts/`)
-                .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                else {
-                    this.setState((state, props) => {
-                        return Object.assign({}, state, { status: `failed: ${response.status}` });
-                    });
-                    return Promise.reject();
-                }
-            })
-                .then((data) => {
+            getCohorts(this.state.from_course).then((data) => {
                 this.setState((state, props) => {
-                    console.log(data);
                     return Object.assign({}, state, { status: `loaded cohorts`, from_cohorts: data });
+                });
+            }, (reason) => {
+                this.setState((state, props) => {
+                    return Object.assign({}, state, { status: `failed: ${reason}` });
                 });
             });
         }
@@ -572,22 +586,13 @@
             });
         }
         update_this_cohorts(course_id) {
-            fetch(`/api/cohorts/v1/courses/${course_id}/cohorts/`)
-                .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                else {
-                    this.setState((state, props) => {
-                        return Object.assign({}, state, { status: `failed: ${response.status}` });
-                    });
-                    return Promise.reject();
-                }
-            })
-                .then((data) => {
+            getCohorts(course_id).then((data) => {
                 this.setState((state, props) => {
-                    console.log(data);
                     return Object.assign({}, state, { status: `loaded cohorts`, this_cohorts: data });
+                });
+            }, (reason) => {
+                this.setState((state, props) => {
+                    return Object.assign({}, state, { status: `failed: ${reason}` });
                 });
             });
         }
