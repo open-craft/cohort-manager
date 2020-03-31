@@ -25,9 +25,9 @@ Frontend Development
 
 If you want to edit the frontend code:
 
-Within the LMS container, run ``npm install`` and then ``make js-watch``.
-
-To build the js, run `make js`.
+1. Within the LMS container, run `npm install`.
+2. To compile the js, run `make js`.
+3. To build the js bundle to load in the frontend, run `make bundle`.
 
 
 Test Instructions

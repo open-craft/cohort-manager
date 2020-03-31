@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 
 import { CohortTable } from "./Components";
 import { Cohort } from "./Types";
+import { getCohorts } from "./utils";
 
 interface CohortSettings {
   is_cohorted: boolean;
@@ -14,8 +15,8 @@ interface State {
   status: string;
   this_course: string;
   from_course: string;
-  this_cohorts: Array<Cohort>;
-  from_cohorts: Array<Cohort>;
+  this_cohorts: Cohort[];
+  from_cohorts: Cohort[];
 }
 
 class CohortManager extends React.Component<Props, State> {
@@ -35,25 +36,18 @@ class CohortManager extends React.Component<Props, State> {
   }
 
   populateFromCohorts() {
-    const course_id = this.state.from_course;
-
-    fetch(`/api/cohorts/v1/courses/${course_id}/cohorts/`)
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          this.setState((state, props) => {
-            return { ...state, status: `failed: ${response.status}` };
-          });
-          return Promise.reject();
-        }
-      })
-      .then((data: Array<Cohort>) => {
+    getCohorts(this.state.from_course).then(
+      (data: Cohort[]) => {
         this.setState((state, props) => {
-          console.log(data);
           return { ...state, status: `loaded cohorts`, from_cohorts: data };
         });
-      });
+      },
+      (reason: any) => {
+        this.setState((state, props) => {
+          return { ...state, status: `failed: ${reason}` };
+        });
+      }
+    );
   }
 
   componentDidMount() {
@@ -83,23 +77,18 @@ class CohortManager extends React.Component<Props, State> {
   }
 
   update_this_cohorts(course_id: string) {
-    fetch(`/api/cohorts/v1/courses/${course_id}/cohorts/`)
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          this.setState((state, props) => {
-            return { ...state, status: `failed: ${response.status}` };
-          });
-          return Promise.reject();
-        }
-      })
-      .then((data: Array<Cohort>) => {
+    getCohorts(course_id).then(
+      (data: Cohort[]) => {
         this.setState((state, props) => {
-          console.log(data);
           return { ...state, status: `loaded cohorts`, this_cohorts: data };
         });
-      });
+      },
+      (reason: any) => {
+        this.setState((state, props) => {
+          return { ...state, status: `failed: ${reason}` };
+        });
+      }
+    );
   }
 
   async importCohorts() {
