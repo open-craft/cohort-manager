@@ -550,20 +550,29 @@
         border: "1px solid",
         padding: "5px",
     };
+
     class CohortTable extends react_3 {
         render() {
-            let cohorts_rows = [];
+            let cohortsRows = [];
             for (let cohort of this.props.cohorts) {
-                cohorts_rows.push(react_1("tr", { key: cohort.id },
+                cohortsRows.push(react_1("tr", { key: cohort.id },
                     react_1("td", { style: cellStyle }, cohort.name),
-                    react_1("td", { style: cellStyle }, cohort.assignment_type)));
+                    react_1("td", { style: cellStyle }, cohort.assignmentType)));
             }
             return (react_1("table", { style: tableStyle },
                 react_1("thead", null,
                     react_1("tr", null,
                         react_1("th", { style: cellStyle }, "Name"),
                         react_1("th", { style: cellStyle }, "Assignment"))),
-                react_1("tbody", null, cohorts_rows)));
+                react_1("tbody", null, cohortsRows)));
+        }
+    }
+    class CourseSelect extends react_3 {
+        render() {
+            const options = this.props.courses.map((course) => (react_1("option", { key: course.courseId, value: course.courseId }, course.name)));
+            return (react_1("select", { value: this.props.value, onChange: this.props.onSelect },
+                react_1("option", { key: "", value: "" }, "-- Choose Course --"),
+                options));
         }
     }
 
@@ -583,117 +592,156 @@
                     throw new Error(response.statusText);
                 }
                 const page = yield response.json();
-                results = results.concat(page);
+                results = results.concat(page.map((x) => {
+                    return {
+                        userCount: x.user_count,
+                        name: x.name,
+                        assignmentType: x.assignment_type,
+                        id: x.id,
+                        groupId: x.group_id,
+                        userPartitionId: x.user_partition_id,
+                    };
+                }));
                 pageNumber += 1;
             }
             return results;
         });
     }
+    function getCourses() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let results = [];
+            let next = '/api/courses/v1/courses/?page_size=100&page=1';
+            while (next) {
+                const response = yield fetch(next);
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        // This probably means we reached the end of pagination (no results?)
+                        break;
+                    }
+                    console.log("Response not ok:", response);
+                    throw new Error(response.statusText);
+                }
+                const data = yield response.json();
+                results = results.concat(data.results.map((course) => {
+                    return {
+                        courseId: course.course_id,
+                        name: course.name,
+                    };
+                }));
+                next = data.pagination.next;
+            }
+            return results;
+        });
+    }
 
+    var CourseType;
+    (function (CourseType) {
+        CourseType["IntoCourse"] = "intoCourse";
+        CourseType["FromCourse"] = "fromCourse";
+    })(CourseType || (CourseType = {}));
     class CohortManager extends react_2 {
         constructor(props) {
             super(props);
             this.state = {
-                status: "loading",
-                this_course: null,
-                from_course: "",
-                this_cohorts: [],
-                from_cohorts: [],
+                status: 'loading',
+                intoCourse: { courseId: '', cohorts: [] },
+                fromCourse: { courseId: '', cohorts: [] },
+                courses: [],
             };
         }
-        handleFromCourseUpdate(event) {
-            this.setState({ from_course: event.target.value });
-        }
-        populateFromCohorts() {
-            getCohorts(this.state.from_course).then((data) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: `loaded cohorts`, from_cohorts: data });
-                });
-            }, (reason) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: `failed: ${reason}` });
-                });
-            });
-        }
         componentDidMount() {
-            const course_id = new URLSearchParams(window.location.search).get("course_id");
-            console.log(course_id);
-            fetch(`/api/cohorts/v1/settings/${course_id}`)
-                .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                else {
-                    this.setState((state, props) => {
-                        return Object.assign(Object.assign({}, state), { status: `failed: ${response.status}` });
-                    });
-                    return Promise.reject();
-                }
-            })
-                .then((data) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: "loaded", this_course: course_id });
+            return __awaiter(this, void 0, void 0, function* () {
+                const courses = yield getCourses();
+                this.setState({
+                    courses,
+                    status: 'loaded',
                 });
-                console.log(data);
-                this.update_this_cohorts(course_id);
             });
         }
-        update_this_cohorts(course_id) {
-            getCohorts(course_id).then((data) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: `loaded cohorts`, this_cohorts: data });
-                });
+        componentDidUpdate(prevProps, prevState) {
+            if (prevState.intoCourse.courseId !== this.state.intoCourse.courseId) {
+                this.updateCohorts(CourseType.IntoCourse);
+            }
+            if (prevState.fromCourse.courseId !== this.state.fromCourse.courseId) {
+                this.updateCohorts(CourseType.FromCourse);
+            }
+        }
+        updateCohorts(courseType) {
+            if (this.state[courseType].courseId === '') {
+                let stateUpdates = { status: 'loaded' };
+                stateUpdates[courseType] = {
+                    courseId: this.state[courseType].courseId,
+                    cohorts: [],
+                };
+                this.setState(stateUpdates);
+                return;
+            }
+            getCohorts(this.state[courseType].courseId).then((data) => {
+                let stateUpdates = { status: 'loaded cohorts' };
+                stateUpdates[courseType] = {
+                    courseId: this.state[courseType].courseId,
+                    cohorts: data,
+                };
+                this.setState(stateUpdates);
             }, (reason) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: `failed: ${reason}` });
-                });
+                this.setState({ status: `failed: ${reason}` });
             });
+        }
+        onCourseChange(courseType, event) {
+            let stateUpdates = {};
+            stateUpdates[courseType] = {
+                courseId: event.target.value,
+                cohorts: this.state[courseType].cohorts
+            };
+            this.setState(stateUpdates);
         }
         importCohorts() {
             return __awaiter(this, void 0, void 0, function* () {
-                // import cohorts from from_cohorts into this_course
+                console.log(this.state);
+                // import cohorts from fromCourse into intoCourse
                 // sequentially, because there are no bulk cohort import methods
-                const course_id = this.state.this_course;
-                const token = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-                const existing_cohort_names = this.state.this_cohorts.map(e => e.name);
-                this.setState({ status: "IMPORT IN PROGRESS" });
-                for (let cohort of this.state.from_cohorts) {
+                const courseId = this.state.intoCourse.courseId;
+                const token = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, '$1');
+                const existingCohortNames = this.state.intoCourse.cohorts.map(e => e.name);
+                this.setState({ status: 'IMPORT IN PROGRESS' });
+                for (let cohort of this.state.fromCourse.cohorts) {
                     // skip existing cohorts
-                    if (existing_cohort_names.indexOf(cohort.name) > -1) {
+                    if (existingCohortNames.indexOf(cohort.name) > -1) {
                         continue;
                     }
                     let data = {
                         name: cohort.name,
-                        assignment_type: cohort.assignment_type,
+                        assignment_type: cohort.assignmentType,
                     };
-                    yield fetch(`/api/cohorts/v1/courses/${course_id}/cohorts/`, {
-                        method: "POST",
+                    yield fetch(`/api/cohorts/v1/courses/${courseId}/cohorts/`, {
+                        method: 'POST',
                         headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": token,
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': token,
                         },
                         body: JSON.stringify(data),
                     })
                         .then(response => {
+                        // TODO error handling
                         return response.text();
                     })
                         .then(text => {
                         console.log(text);
                     });
                 }
-                this.setState({ status: "IMPORT COMPLETE" });
-                this.update_this_cohorts(course_id);
+                this.setState({ status: 'IMPORT COMPLETE' });
+                this.updateCohorts(CourseType.IntoCourse);
             });
         }
         render() {
-            const gridColumn = {
+            const gridColumnStyle = {
                 gridColumn: 1 / 2,
                 gridRow: 1,
             };
-            const gridWrapper = {
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gridGap: "10px",
+            const gridWrapperStyle = {
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gridGap: '10px',
             };
             return (react_1("div", null,
                 react_1("div", null,
@@ -701,28 +749,27 @@
                     react_1("p", null,
                         "Status: ",
                         this.state.status)),
-                react_1("div", { style: gridWrapper },
-                    react_1("div", { style: gridColumn },
-                        react_1("h3", null, this.state.this_course),
+                react_1("div", { style: gridWrapperStyle },
+                    react_1("div", { style: gridColumnStyle },
+                        react_1("h3", null, this.state.intoCourse.courseId),
+                        react_1(CourseSelect, { courses: this.state.courses, onSelect: ((e) => this.onCourseChange(CourseType.IntoCourse, e)).bind(this), value: this.state.intoCourse.courseId }),
                         react_1("p", null, "Current cohorts:"),
-                        react_1(CohortTable, { cohorts: this.state.this_cohorts })),
-                    react_1("div", { style: gridColumn },
+                        react_1(CohortTable, { cohorts: this.state.intoCourse.cohorts })),
+                    react_1("div", { style: gridColumnStyle },
                         react_1("p", null, "Import cohorts from:"),
-                        react_1("p", null,
-                            react_1("input", { type: "text", placeholder: "course-v1:edX+DemoX+Demo_Course", value: this.state.from_course, onChange: ev => this.handleFromCourseUpdate(ev) }),
-                            react_1("button", { onClick: () => this.populateFromCohorts() }, "Load cohorts list")),
+                        react_1(CourseSelect, { courses: this.state.courses, onSelect: ((e) => this.onCourseChange(CourseType.FromCourse, e)).bind(this), value: this.state.fromCourse.courseId }),
                         react_1("p", null,
                             react_1("button", { onClick: () => this.importCohorts() },
                                 "Import cohorts into ",
-                                this.state.this_course)),
+                                this.state.intoCourse.courseId)),
                         react_1("p", null, "Cohorts to be imported:"),
                         react_1("p", null,
-                            react_1(CohortTable, { cohorts: this.state.from_cohorts }))))));
+                            react_1(CohortTable, { cohorts: this.state.fromCourse.cohorts }))))));
         }
     }
     // wait for the dom to load before attempting to render into the dom.
-    document.addEventListener("DOMContentLoaded", function (event) {
-        reactDom_1(react_1(CohortManager, null), document.getElementById("cohort-manager-root"));
+    document.addEventListener('DOMContentLoaded', function (event) {
+        reactDom_1(react_1(CohortManager, null), document.getElementById('cohort-manager-root'));
     });
 
 }());

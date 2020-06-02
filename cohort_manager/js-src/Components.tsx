@@ -1,25 +1,16 @@
 import * as React from "react";
 
-import { Cohort } from "./Types";
-
-const tableStyle: React.CSSProperties = {
-  borderCollapse: "collapse",
-  border: "1px solid",
-};
-
-const cellStyle: React.CSSProperties = {
-  border: "1px solid",
-  padding: "5px",
-};
+import { Cohort, Course } from "./Types";
+import { tableStyle, cellStyle } from "./Styles";
 
 export class CohortTable extends React.PureComponent<{ cohorts: Cohort[] }> {
   render() {
-    let cohorts_rows = [];
+    let cohortsRows = [];
     for (let cohort of this.props.cohorts) {
-      cohorts_rows.push(
+      cohortsRows.push(
         <tr key={cohort.id}>
           <td style={cellStyle}>{cohort.name}</td>
-          <td style={cellStyle}>{cohort.assignment_type}</td>
+          <td style={cellStyle}>{cohort.assignmentType}</td>
         </tr>
       );
     }
@@ -32,8 +23,28 @@ export class CohortTable extends React.PureComponent<{ cohorts: Cohort[] }> {
             <th style={cellStyle}>Assignment</th>
           </tr>
         </thead>
-        <tbody>{cohorts_rows}</tbody>
+        <tbody>{cohortsRows}</tbody>
       </table>
+    );
+  }
+}
+
+interface CourseSelectProps {
+  courses: Course[];
+  onSelect: (event: any) => void;
+  value: string;
+}
+
+export class CourseSelect extends React.PureComponent<CourseSelectProps> {
+  render() {
+    const options = this.props.courses.map((course) => (
+      <option key={course.courseId} value={course.courseId}>{course.name}</option>
+    ));
+    return (
+      <select value={this.props.value} onChange={this.props.onSelect}>
+        <option key="" value="">-- Choose Course --</option>
+        {options}
+      </select>
     );
   }
 }

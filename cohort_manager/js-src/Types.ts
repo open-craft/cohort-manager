@@ -1,8 +1,13 @@
 export interface Cohort {
-  user_count: number;
+  userCount: number;
   name: string;
-  assignment_type: string;
+  assignmentType: string;
   id: number;
-  group_id: number;
-  user_partition_id: number;
+  groupId: number;
+  userPartitionId: number;
+}
+
+export interface Course {
+  courseId: string,
+  name: string,
 }
