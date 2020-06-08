@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { CohortTable, CourseSelect } from './Components';
+import { CohortTable, CourseSelect, Spinner } from './Components';
 import { Cohort, Course } from './Types';
 import { getCohorts, getCourses } from './utils';
 
@@ -13,12 +13,10 @@ interface CourseData {
 }
 
 interface State {
-  // free text status field shown to the user
-  status: string;
+  busy: boolean;  // whether loading, etc. is happening in the background
   intoCourse: CourseData;
   fromCourse: CourseData;
-  // All course ids on the instance
-  courses: Course[];
+  courses: Course[];   // All course ids on the instance
 }
 
 enum CourseType {
@@ -30,7 +28,7 @@ class CohortManager extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
-      status: 'loading',
+      busy: true,
       intoCourse: {courseId: '', cohorts: []},
       fromCourse: {courseId: '', cohorts: []},
       courses: [],
@@ -41,7 +39,7 @@ class CohortManager extends React.Component<Props, State> {
     const courses = await getCourses();
     this.setState({
       courses,
-      status: 'loaded',
+      busy: false,
     });
   }
 
@@ -56,7 +54,7 @@ class CohortManager extends React.Component<Props, State> {
 
   updateCohorts(courseType: CourseType) {
     if (this.state[courseType].courseId === '') {
-      let stateUpdates = {status: 'loaded'};
+      let stateUpdates = { busy: false };
       stateUpdates[courseType] = {
         courseId: this.state[courseType].courseId,
         cohorts: [],
@@ -65,9 +63,10 @@ class CohortManager extends React.Component<Props, State> {
       return;
     }
 
+    this.setState({busy: true});
     getCohorts(this.state[courseType].courseId).then(
       (data: Cohort[]) => {
-        let stateUpdates = {status: 'loaded cohorts'};
+        let stateUpdates = { busy: false };
         stateUpdates[courseType] = {
           courseId: this.state[courseType].courseId,
           cohorts: data,
@@ -75,12 +74,14 @@ class CohortManager extends React.Component<Props, State> {
         this.setState(stateUpdates);
       },
       (reason: any) => {
-        this.setState({ status: `failed: ${reason}` });
+        this.setState({ busy: false });
       }
     );
   }
 
   onCourseChange(courseType: CourseType, event: any) {
+    // Updates the state when a course is selected. Actual work is triggered in
+    // componentDidUpdate.
     let stateUpdates = {};
     stateUpdates[courseType] = {
       courseId: event.target.value,
@@ -90,17 +91,16 @@ class CohortManager extends React.Component<Props, State> {
   }
 
   async importCohorts() {
-    console.log(this.state);
+    console.log(this.state); // debug
     // import cohorts from fromCourse into intoCourse
     // sequentially, because there are no bulk cohort import methods
+    this.setState({ busy: true });
     const courseId = this.state.intoCourse.courseId;
     const token = document.cookie.replace(
       /(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/,
       '$1'
     );
-
     const existingCohortNames = this.state.intoCourse.cohorts.map(e => e.name);
-    this.setState({ status: 'IMPORT IN PROGRESS' });
 
     for (let cohort of this.state.fromCourse.cohorts) {
       // skip existing cohorts
@@ -127,55 +127,70 @@ class CohortManager extends React.Component<Props, State> {
           console.log(text);
         });
     }
-    this.setState({ status: 'IMPORT COMPLETE' });
+
+    this.setState({ busy: false });
     this.updateCohorts(CourseType.IntoCourse);
+  }
+
+  private isReadyToImport(): boolean {
+    // We are ready to run an import/copy if both courses' information is
+    // loaded and they aren't both the same course.
+    return (
+      this.state.intoCourse.courseId !== ''
+      && this.state.fromCourse.courseId !== ''
+      && !this.state.busy
+      && this.state.intoCourse.courseId !== this.state.fromCourse.courseId
+    );
   }
 
   render() {
     const gridColumnStyle = {
-      gridColumn: 1 / 2,
+      gridColumn: 2 / 5,
+      gridRow: 1,
+    };
+
+    const btnGridColumnStyle = {
+      gridColumn: 1 / 5,
       gridRow: 1,
     };
 
     const gridWrapperStyle = {
       display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
+      gridTemplateColumns: '2fr 1fr 2fr',
       gridGap: '10px',
     };
 
     return (
       <div>
-        <div>
-          <h2>Cohort Importer</h2>
-          <p>Status: {this.state.status}</p>
-        </div>
+        {this.state.busy ? <Spinner /> : null}
+        <h2 style={{marginBottom: '20px'}}>Cohort Importer</h2>
         <div style={gridWrapperStyle}>
           <div style={gridColumnStyle}>
-            <h3>{this.state.intoCourse.courseId}</h3>
-            <CourseSelect
-              courses={this.state.courses}
-              onSelect={((e) => this.onCourseChange(CourseType.IntoCourse, e)).bind(this)}
-              value={this.state.intoCourse.courseId}
-            />
-            <p>Current cohorts:</p>
-            <CohortTable cohorts={this.state.intoCourse.cohorts} />
-          </div>
-          <div style={gridColumnStyle}>
-            <p>Import cohorts from:</p>
+            <h3>From Course</h3>
             <CourseSelect
               courses={this.state.courses}
               onSelect={((e) => this.onCourseChange(CourseType.FromCourse, e)).bind(this)}
               value={this.state.fromCourse.courseId}
             />
-            <p>
-              <button onClick={() => this.importCohorts()}>
-                Import cohorts into {this.state.intoCourse.courseId}
-              </button>
-            </p>
-            <p>Cohorts to be imported:</p>
-            <p>
-              <CohortTable cohorts={this.state.fromCourse.cohorts} />
-            </p>
+            <h4>Cohorts to be imported:</h4>
+            <CohortTable cohorts={this.state.fromCourse.cohorts} />
+          </div>
+
+          <div style={btnGridColumnStyle}>
+            <button onClick={() => this.importCohorts()} disabled={!this.isReadyToImport()}>
+              Copy cohorts ->
+            </button>
+          </div>
+
+          <div style={gridColumnStyle}>
+            <h3>Into Course</h3>
+            <CourseSelect
+              courses={this.state.courses}
+              onSelect={((e) => this.onCourseChange(CourseType.IntoCourse, e)).bind(this)}
+              value={this.state.intoCourse.courseId}
+            />
+            <h4>Current cohorts:</h4>
+            <CohortTable cohorts={this.state.intoCourse.cohorts} />
           </div>
         </div>
       </div>
