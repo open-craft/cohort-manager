@@ -550,20 +550,87 @@
         border: "1px solid",
         padding: "5px",
     };
+
     class CohortTable extends react_3 {
         render() {
-            let cohorts_rows = [];
+            let cohortsRows = [];
             for (let cohort of this.props.cohorts) {
-                cohorts_rows.push(react_1("tr", { key: cohort.id },
+                cohortsRows.push(react_1("tr", { key: cohort.id },
                     react_1("td", { style: cellStyle }, cohort.name),
-                    react_1("td", { style: cellStyle }, cohort.assignment_type)));
+                    react_1("td", { style: cellStyle }, cohort.assignmentType)));
             }
             return (react_1("table", { style: tableStyle },
                 react_1("thead", null,
                     react_1("tr", null,
                         react_1("th", { style: cellStyle }, "Name"),
                         react_1("th", { style: cellStyle }, "Assignment"))),
-                react_1("tbody", null, cohorts_rows)));
+                react_1("tbody", null, cohortsRows)));
+        }
+    }
+    class CourseSelect extends react_3 {
+        render() {
+            const options = this.props.courses.map((course) => (react_1("option", { key: course.courseId, value: course.courseId }, course.name)));
+            const style = {
+                marginBottom: '10px',
+            };
+            return (react_1("select", { style: style, value: this.props.value, onChange: this.props.onSelect },
+                react_1("option", { key: "", value: "" }, "-- Choose Course --"),
+                options));
+        }
+    }
+    class Spinner extends react_3 {
+        render() {
+            const svgStyle = {
+                display: 'block',
+                position: 'fixed',
+                left: '50%',
+                top: '25%',
+                marginLeft: '-98px',
+                marginTop: '-98px',
+            };
+            return (
+            // source: https://loading.io/, used under https://loading.io/license/#free-license
+            react_1("svg", { xmlns: "http://www.w3.org/2000/svg", style: svgStyle, width: "196px", height: "196px", viewBox: "0 0 100 100", preserveAspectRatio: "xMidYMid" },
+                react_1("g", { transform: "translate(80,50)" },
+                    react_1("g", { transform: "rotate(0)" },
+                        react_1("circle", { cx: "0", cy: "0", r: "6", fill: "#ffa663", "fill-opacity": "1" },
+                            react_1("animateTransform", { attributeName: "transform", type: "scale", begin: "-0.875s", values: "1.5 1.5;1 1", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite" }),
+                            react_1("animate", { attributeName: "fill-opacity", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite", values: "1;0", begin: "-0.875s" })))),
+                react_1("g", { transform: "translate(71.21320343559643,71.21320343559643)" },
+                    react_1("g", { transform: "rotate(45)" },
+                        react_1("circle", { cx: "0", cy: "0", r: "6", fill: "#ffa663", "fill-opacity": "0.875" },
+                            react_1("animateTransform", { attributeName: "transform", type: "scale", begin: "-0.75s", values: "1.5 1.5;1 1", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite" }),
+                            react_1("animate", { attributeName: "fill-opacity", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite", values: "1;0", begin: "-0.75s" })))),
+                react_1("g", { transform: "translate(50,80)" },
+                    react_1("g", { transform: "rotate(90)" },
+                        react_1("circle", { cx: "0", cy: "0", r: "6", fill: "#ffa663", "fill-opacity": "0.75" },
+                            react_1("animateTransform", { attributeName: "transform", type: "scale", begin: "-0.625s", values: "1.5 1.5;1 1", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite" }),
+                            react_1("animate", { attributeName: "fill-opacity", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite", values: "1;0", begin: "-0.625s" })))),
+                react_1("g", { transform: "translate(28.786796564403577,71.21320343559643)" },
+                    react_1("g", { transform: "rotate(135)" },
+                        react_1("circle", { cx: "0", cy: "0", r: "6", fill: "#ffa663", "fill-opacity": "0.625" },
+                            react_1("animateTransform", { attributeName: "transform", type: "scale", begin: "-0.5s", values: "1.5 1.5;1 1", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite" }),
+                            react_1("animate", { attributeName: "fill-opacity", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite", values: "1;0", begin: "-0.5s" })))),
+                react_1("g", { transform: "translate(20,50.00000000000001)" },
+                    react_1("g", { transform: "rotate(180)" },
+                        react_1("circle", { cx: "0", cy: "0", r: "6", fill: "#ffa663", "fill-opacity": "0.5" },
+                            react_1("animateTransform", { attributeName: "transform", type: "scale", begin: "-0.375s", values: "1.5 1.5;1 1", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite" }),
+                            react_1("animate", { attributeName: "fill-opacity", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite", values: "1;0", begin: "-0.375s" })))),
+                react_1("g", { transform: "translate(28.78679656440357,28.786796564403577)" },
+                    react_1("g", { transform: "rotate(225)" },
+                        react_1("circle", { cx: "0", cy: "0", r: "6", fill: "#ffa663", "fill-opacity": "0.375" },
+                            react_1("animateTransform", { attributeName: "transform", type: "scale", begin: "-0.25s", values: "1.5 1.5;1 1", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite" }),
+                            react_1("animate", { attributeName: "fill-opacity", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite", values: "1;0", begin: "-0.25s" })))),
+                react_1("g", { transform: "translate(49.99999999999999,20)" },
+                    react_1("g", { transform: "rotate(270)" },
+                        react_1("circle", { cx: "0", cy: "0", r: "6", fill: "#ffa663", "fill-opacity": "0.25" },
+                            react_1("animateTransform", { attributeName: "transform", type: "scale", begin: "-0.125s", values: "1.5 1.5;1 1", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite" }),
+                            react_1("animate", { attributeName: "fill-opacity", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite", values: "1;0", begin: "-0.125s" })))),
+                react_1("g", { transform: "translate(71.21320343559643,28.78679656440357)" },
+                    react_1("g", { transform: "rotate(315)" },
+                        react_1("circle", { cx: "0", cy: "0", r: "6", fill: "#ffa663", "fill-opacity": "0.125" },
+                            react_1("animateTransform", { attributeName: "transform", type: "scale", begin: "0s", values: "1.5 1.5;1 1", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite" }),
+                            react_1("animate", { attributeName: "fill-opacity", keyTimes: "0;1", dur: "1s", repeatCount: "indefinite", values: "1;0", begin: "0s" }))))));
         }
     }
 
@@ -583,146 +650,193 @@
                     throw new Error(response.statusText);
                 }
                 const page = yield response.json();
-                results = results.concat(page);
+                results = results.concat(page.map((x) => {
+                    return {
+                        userCount: x.user_count,
+                        name: x.name,
+                        assignmentType: x.assignment_type,
+                        id: x.id,
+                        groupId: x.group_id,
+                        userPartitionId: x.user_partition_id,
+                    };
+                }));
                 pageNumber += 1;
             }
             return results;
         });
     }
+    function getCourses() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let results = [];
+            let next = '/api/courses/v1/courses/?page_size=100&page=1';
+            while (next) {
+                const response = yield fetch(next);
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        // This probably means we reached the end of pagination (no results?)
+                        break;
+                    }
+                    console.log("Response not ok:", response);
+                    throw new Error(response.statusText);
+                }
+                const data = yield response.json();
+                results = results.concat(data.results.map((course) => {
+                    return {
+                        courseId: course.course_id,
+                        name: course.name,
+                    };
+                }));
+                next = data.pagination.next;
+            }
+            return results;
+        });
+    }
 
+    var CourseType;
+    (function (CourseType) {
+        CourseType["IntoCourse"] = "intoCourse";
+        CourseType["FromCourse"] = "fromCourse";
+    })(CourseType || (CourseType = {}));
     class CohortManager extends react_2 {
         constructor(props) {
             super(props);
             this.state = {
-                status: "loading",
-                this_course: null,
-                from_course: "",
-                this_cohorts: [],
-                from_cohorts: [],
+                busy: true,
+                intoCourse: { courseId: '', cohorts: [] },
+                fromCourse: { courseId: '', cohorts: [] },
+                courses: [],
             };
         }
-        handleFromCourseUpdate(event) {
-            this.setState({ from_course: event.target.value });
-        }
-        populateFromCohorts() {
-            getCohorts(this.state.from_course).then((data) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: `loaded cohorts`, from_cohorts: data });
-                });
-            }, (reason) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: `failed: ${reason}` });
-                });
-            });
-        }
         componentDidMount() {
-            const course_id = new URLSearchParams(window.location.search).get("course_id");
-            console.log(course_id);
-            fetch(`/api/cohorts/v1/settings/${course_id}`)
-                .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                else {
-                    this.setState((state, props) => {
-                        return Object.assign(Object.assign({}, state), { status: `failed: ${response.status}` });
-                    });
-                    return Promise.reject();
-                }
-            })
-                .then((data) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: "loaded", this_course: course_id });
+            return __awaiter(this, void 0, void 0, function* () {
+                const courses = yield getCourses();
+                this.setState({
+                    courses,
+                    busy: false,
                 });
-                console.log(data);
-                this.update_this_cohorts(course_id);
             });
         }
-        update_this_cohorts(course_id) {
-            getCohorts(course_id).then((data) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: `loaded cohorts`, this_cohorts: data });
-                });
+        componentDidUpdate(prevProps, prevState) {
+            if (prevState.intoCourse.courseId !== this.state.intoCourse.courseId) {
+                this.updateCohorts(CourseType.IntoCourse);
+            }
+            if (prevState.fromCourse.courseId !== this.state.fromCourse.courseId) {
+                this.updateCohorts(CourseType.FromCourse);
+            }
+        }
+        updateCohorts(courseType) {
+            if (this.state[courseType].courseId === '') {
+                let stateUpdates = { busy: false };
+                stateUpdates[courseType] = {
+                    courseId: this.state[courseType].courseId,
+                    cohorts: [],
+                };
+                this.setState(stateUpdates);
+                return;
+            }
+            this.setState({ busy: true });
+            getCohorts(this.state[courseType].courseId).then((data) => {
+                let stateUpdates = { busy: false };
+                stateUpdates[courseType] = {
+                    courseId: this.state[courseType].courseId,
+                    cohorts: data,
+                };
+                this.setState(stateUpdates);
             }, (reason) => {
-                this.setState((state, props) => {
-                    return Object.assign(Object.assign({}, state), { status: `failed: ${reason}` });
-                });
+                this.setState({ busy: false });
             });
+        }
+        onCourseChange(courseType, event) {
+            // Updates the state when a course is selected. Actual work is triggered in
+            // componentDidUpdate.
+            let stateUpdates = {};
+            stateUpdates[courseType] = {
+                courseId: event.target.value,
+                cohorts: this.state[courseType].cohorts
+            };
+            this.setState(stateUpdates);
         }
         importCohorts() {
             return __awaiter(this, void 0, void 0, function* () {
-                // import cohorts from from_cohorts into this_course
+                console.log(this.state); // debug
+                // import cohorts from fromCourse into intoCourse
                 // sequentially, because there are no bulk cohort import methods
-                const course_id = this.state.this_course;
-                const token = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-                const existing_cohort_names = this.state.this_cohorts.map(e => e.name);
-                this.setState({ status: "IMPORT IN PROGRESS" });
-                for (let cohort of this.state.from_cohorts) {
+                this.setState({ busy: true });
+                const courseId = this.state.intoCourse.courseId;
+                const token = document.cookie.replace(/(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/, '$1');
+                const existingCohortNames = this.state.intoCourse.cohorts.map(e => e.name);
+                for (let cohort of this.state.fromCourse.cohorts) {
                     // skip existing cohorts
-                    if (existing_cohort_names.indexOf(cohort.name) > -1) {
+                    if (existingCohortNames.indexOf(cohort.name) > -1) {
                         continue;
                     }
                     let data = {
                         name: cohort.name,
-                        assignment_type: cohort.assignment_type,
+                        assignment_type: cohort.assignmentType,
                     };
-                    yield fetch(`/api/cohorts/v1/courses/${course_id}/cohorts/`, {
-                        method: "POST",
+                    yield fetch(`/api/cohorts/v1/courses/${courseId}/cohorts/`, {
+                        method: 'POST',
                         headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": token,
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': token,
                         },
                         body: JSON.stringify(data),
                     })
                         .then(response => {
+                        // TODO error handling
                         return response.text();
                     })
                         .then(text => {
                         console.log(text);
                     });
                 }
-                this.setState({ status: "IMPORT COMPLETE" });
-                this.update_this_cohorts(course_id);
+                this.setState({ busy: false });
+                this.updateCohorts(CourseType.IntoCourse);
             });
         }
+        isReadyToImport() {
+            // We are ready to run an import/copy if both courses' information is
+            // loaded and they aren't both the same course.
+            return (this.state.intoCourse.courseId !== ''
+                && this.state.fromCourse.courseId !== ''
+                && !this.state.busy
+                && this.state.intoCourse.courseId !== this.state.fromCourse.courseId);
+        }
         render() {
-            const gridColumn = {
-                gridColumn: 1 / 2,
+            const gridColumnStyle = {
+                gridColumn: 2 / 5,
                 gridRow: 1,
             };
-            const gridWrapper = {
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gridGap: "10px",
+            const btnGridColumnStyle = {
+                gridColumn: 1 / 5,
+                gridRow: 1,
+            };
+            const gridWrapperStyle = {
+                display: 'grid',
+                gridTemplateColumns: '2fr 1fr 2fr',
+                gridGap: '10px',
             };
             return (react_1("div", null,
-                react_1("div", null,
-                    react_1("h2", null, "Cohort Importer"),
-                    react_1("p", null,
-                        "Status: ",
-                        this.state.status)),
-                react_1("div", { style: gridWrapper },
-                    react_1("div", { style: gridColumn },
-                        react_1("h3", null, this.state.this_course),
-                        react_1("p", null, "Current cohorts:"),
-                        react_1(CohortTable, { cohorts: this.state.this_cohorts })),
-                    react_1("div", { style: gridColumn },
-                        react_1("p", null, "Import cohorts from:"),
-                        react_1("p", null,
-                            react_1("input", { type: "text", placeholder: "course-v1:edX+DemoX+Demo_Course", value: this.state.from_course, onChange: ev => this.handleFromCourseUpdate(ev) }),
-                            react_1("button", { onClick: () => this.populateFromCohorts() }, "Load cohorts list")),
-                        react_1("p", null,
-                            react_1("button", { onClick: () => this.importCohorts() },
-                                "Import cohorts into ",
-                                this.state.this_course)),
-                        react_1("p", null, "Cohorts to be imported:"),
-                        react_1("p", null,
-                            react_1(CohortTable, { cohorts: this.state.from_cohorts }))))));
+                this.state.busy ? react_1(Spinner, null) : null,
+                react_1("h2", { style: { marginBottom: '20px' } }, "Cohort Importer"),
+                react_1("div", { style: gridWrapperStyle },
+                    react_1("div", { style: gridColumnStyle },
+                        react_1("h3", null, "From Course"),
+                        react_1(CourseSelect, { courses: this.state.courses, onSelect: ((e) => this.onCourseChange(CourseType.FromCourse, e)).bind(this), value: this.state.fromCourse.courseId }),
+                        react_1("h4", null, "Cohorts to be imported:"),
+                        react_1(CohortTable, { cohorts: this.state.fromCourse.cohorts })),
+                    react_1("div", { style: btnGridColumnStyle },
+                        react_1("button", { onClick: () => this.importCohorts(), disabled: !this.isReadyToImport() }, "Copy cohorts ->")),
+                    react_1("div", { style: gridColumnStyle },
+                        react_1("h3", null, "Into Course"),
+                        react_1(CourseSelect, { courses: this.state.courses, onSelect: ((e) => this.onCourseChange(CourseType.IntoCourse, e)).bind(this), value: this.state.intoCourse.courseId }),
+                        react_1("h4", null, "Current cohorts:"),
+                        react_1(CohortTable, { cohorts: this.state.intoCourse.cohorts })))));
         }
     }
     // wait for the dom to load before attempting to render into the dom.
-    document.addEventListener("DOMContentLoaded", function (event) {
-        reactDom_1(react_1(CohortManager, null), document.getElementById("cohort-manager-root"));
+    document.addEventListener('DOMContentLoaded', function (event) {
+        reactDom_1(react_1(CohortManager, null), document.getElementById('cohort-manager-root'));
     });
 
 }());

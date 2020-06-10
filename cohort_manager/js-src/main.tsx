@@ -1,182 +1,196 @@
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 
-import { CohortTable } from "./Components";
-import { Cohort } from "./Types";
-import { getCohorts } from "./utils";
-
-interface CohortSettings {
-  is_cohorted: boolean;
-}
+import { CohortTable, CourseSelect, Spinner } from './Components';
+import { Cohort, Course } from './Types';
+import { getCohorts, getCourses } from './utils';
 
 interface Props {}
 
+interface CourseData {
+  courseId: string;
+  cohorts: Cohort[];
+}
+
 interface State {
-  status: string;
-  this_course: string;
-  from_course: string;
-  this_cohorts: Cohort[];
-  from_cohorts: Cohort[];
+  busy: boolean;  // whether loading, etc. is happening in the background
+  intoCourse: CourseData;
+  fromCourse: CourseData;
+  courses: Course[];   // All course ids on the instance
+}
+
+enum CourseType {
+  IntoCourse = 'intoCourse',
+  FromCourse = 'fromCourse',
 }
 
 class CohortManager extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
-      status: "loading",
-      this_course: null,
-      from_course: "",
-      this_cohorts: [],
-      from_cohorts: [],
+      busy: true,
+      intoCourse: {courseId: '', cohorts: []},
+      fromCourse: {courseId: '', cohorts: []},
+      courses: [],
     };
   }
 
-  handleFromCourseUpdate(event) {
-    this.setState({ from_course: event.target.value });
+  async componentDidMount() {
+    const courses = await getCourses();
+    this.setState({
+      courses,
+      busy: false,
+    });
   }
 
-  populateFromCohorts() {
-    getCohorts(this.state.from_course).then(
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    if (prevState.intoCourse.courseId !== this.state.intoCourse.courseId) {
+      this.updateCohorts(CourseType.IntoCourse);
+    }
+    if (prevState.fromCourse.courseId !== this.state.fromCourse.courseId) {
+      this.updateCohorts(CourseType.FromCourse);
+    }
+  }
+
+  updateCohorts(courseType: CourseType) {
+    if (this.state[courseType].courseId === '') {
+      let stateUpdates = { busy: false };
+      stateUpdates[courseType] = {
+        courseId: this.state[courseType].courseId,
+        cohorts: [],
+      };
+      this.setState(stateUpdates);
+      return;
+    }
+
+    this.setState({busy: true});
+    getCohorts(this.state[courseType].courseId).then(
       (data: Cohort[]) => {
-        this.setState((state, props) => {
-          return { ...state, status: `loaded cohorts`, from_cohorts: data };
-        });
+        let stateUpdates = { busy: false };
+        stateUpdates[courseType] = {
+          courseId: this.state[courseType].courseId,
+          cohorts: data,
+        };
+        this.setState(stateUpdates);
       },
       (reason: any) => {
-        this.setState((state, props) => {
-          return { ...state, status: `failed: ${reason}` };
-        });
+        this.setState({ busy: false });
       }
     );
   }
 
-  componentDidMount() {
-    const course_id: string = new URLSearchParams(window.location.search).get(
-      "course_id"
-    );
-    console.log(course_id);
-
-    fetch(`/api/cohorts/v1/settings/${course_id}`)
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          this.setState((state, props) => {
-            return { ...state, status: `failed: ${response.status}` };
-          });
-          return Promise.reject();
-        }
-      })
-      .then((data: CohortSettings) => {
-        this.setState((state, props) => {
-          return { ...state, status: "loaded", this_course: course_id };
-        });
-        console.log(data);
-        this.update_this_cohorts(course_id);
-      });
-  }
-
-  update_this_cohorts(course_id: string) {
-    getCohorts(course_id).then(
-      (data: Cohort[]) => {
-        this.setState((state, props) => {
-          return { ...state, status: `loaded cohorts`, this_cohorts: data };
-        });
-      },
-      (reason: any) => {
-        this.setState((state, props) => {
-          return { ...state, status: `failed: ${reason}` };
-        });
-      }
-    );
+  onCourseChange(courseType: CourseType, event: any) {
+    // Updates the state when a course is selected. Actual work is triggered in
+    // componentDidUpdate.
+    let stateUpdates = {};
+    stateUpdates[courseType] = {
+      courseId: event.target.value,
+      cohorts: this.state[courseType].cohorts
+    };
+    this.setState(stateUpdates);
   }
 
   async importCohorts() {
-    // import cohorts from from_cohorts into this_course
+    console.log(this.state); // debug
+    // import cohorts from fromCourse into intoCourse
     // sequentially, because there are no bulk cohort import methods
-    const course_id = this.state.this_course;
+    this.setState({ busy: true });
+    const courseId = this.state.intoCourse.courseId;
     const token = document.cookie.replace(
       /(?:(?:^|.*;\s*)csrftoken\s*\=\s*([^;]*).*$)|^.*$/,
-      "$1"
+      '$1'
     );
+    const existingCohortNames = this.state.intoCourse.cohorts.map(e => e.name);
 
-    const existing_cohort_names = this.state.this_cohorts.map(e => e.name);
-    this.setState({ status: "IMPORT IN PROGRESS" });
-
-    for (let cohort of this.state.from_cohorts) {
+    for (let cohort of this.state.fromCourse.cohorts) {
       // skip existing cohorts
-      if (existing_cohort_names.indexOf(cohort.name) > -1) {
+      if (existingCohortNames.indexOf(cohort.name) > -1) {
         continue;
       }
       let data = {
         name: cohort.name,
-        assignment_type: cohort.assignment_type,
+        assignment_type: cohort.assignmentType,
       };
-      await fetch(`/api/cohorts/v1/courses/${course_id}/cohorts/`, {
-        method: "POST",
+      await fetch(`/api/cohorts/v1/courses/${courseId}/cohorts/`, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": token,
+          'Content-Type': 'application/json',
+          'X-CSRFToken': token,
         },
         body: JSON.stringify(data),
       })
         .then(response => {
+          // TODO error handling
           return response.text();
         })
         .then(text => {
           console.log(text);
         });
     }
-    this.setState({ status: "IMPORT COMPLETE" });
-    this.update_this_cohorts(course_id);
+
+    this.setState({ busy: false });
+    this.updateCohorts(CourseType.IntoCourse);
+  }
+
+  private isReadyToImport(): boolean {
+    // We are ready to run an import/copy if both courses' information is
+    // loaded and they aren't both the same course.
+    return (
+      this.state.intoCourse.courseId !== ''
+      && this.state.fromCourse.courseId !== ''
+      && !this.state.busy
+      && this.state.intoCourse.courseId !== this.state.fromCourse.courseId
+    );
   }
 
   render() {
-    const gridColumn = {
-      gridColumn: 1 / 2,
+    const gridColumnStyle = {
+      gridColumn: 2 / 5,
       gridRow: 1,
     };
 
-    const gridWrapper = {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gridGap: "10px",
+    const btnGridColumnStyle = {
+      gridColumn: 1 / 5,
+      gridRow: 1,
+    };
+
+    const gridWrapperStyle = {
+      display: 'grid',
+      gridTemplateColumns: '2fr 1fr 2fr',
+      gridGap: '10px',
     };
 
     return (
       <div>
-        <div>
-          <h2>Cohort Importer</h2>
-          <p>Status: {this.state.status}</p>
-        </div>
-        <div style={gridWrapper}>
-          <div style={gridColumn}>
-            <h3>{this.state.this_course}</h3>
-            <p>Current cohorts:</p>
-            <CohortTable cohorts={this.state.this_cohorts} />
+        {this.state.busy ? <Spinner /> : null}
+        <h2 style={{marginBottom: '20px'}}>Cohort Importer</h2>
+        <div style={gridWrapperStyle}>
+          <div style={gridColumnStyle}>
+            <h3>From Course</h3>
+            <CourseSelect
+              courses={this.state.courses}
+              onSelect={((e) => this.onCourseChange(CourseType.FromCourse, e)).bind(this)}
+              value={this.state.fromCourse.courseId}
+            />
+            <h4>Cohorts to be imported:</h4>
+            <CohortTable cohorts={this.state.fromCourse.cohorts} />
           </div>
-          <div style={gridColumn}>
-            <p>Import cohorts from:</p>
-            <p>
-              <input
-                type="text"
-                placeholder="course-v1:edX+DemoX+Demo_Course"
-                value={this.state.from_course}
-                onChange={ev => this.handleFromCourseUpdate(ev)}
-              />
-              <button onClick={() => this.populateFromCohorts()}>
-                Load cohorts list
-              </button>
-            </p>
-            <p>
-              <button onClick={() => this.importCohorts()}>
-                Import cohorts into {this.state.this_course}
-              </button>
-            </p>
-            <p>Cohorts to be imported:</p>
-            <p>
-              <CohortTable cohorts={this.state.from_cohorts} />
-            </p>
+
+          <div style={btnGridColumnStyle}>
+            <button onClick={() => this.importCohorts()} disabled={!this.isReadyToImport()}>
+              Copy cohorts ->
+            </button>
+          </div>
+
+          <div style={gridColumnStyle}>
+            <h3>Into Course</h3>
+            <CourseSelect
+              courses={this.state.courses}
+              onSelect={((e) => this.onCourseChange(CourseType.IntoCourse, e)).bind(this)}
+              value={this.state.intoCourse.courseId}
+            />
+            <h4>Current cohorts:</h4>
+            <CohortTable cohorts={this.state.intoCourse.cohorts} />
           </div>
         </div>
       </div>
@@ -185,9 +199,9 @@ class CohortManager extends React.Component<Props, State> {
 }
 
 // wait for the dom to load before attempting to render into the dom.
-document.addEventListener("DOMContentLoaded", function(event) {
+document.addEventListener('DOMContentLoaded', function(event) {
   ReactDOM.render(
     <CohortManager />,
-    document.getElementById("cohort-manager-root")
+    document.getElementById('cohort-manager-root')
   );
 });
