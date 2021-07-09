@@ -37,6 +37,10 @@ Run the tests from the devstack LMS shell (``make lms-shell``) using::
 
     make -f /edx/src/cohort-manager/Makefile validate
 
+Project details
+---------------
+The development was funded by Centrale Lille for an I-SITE Université Lille Nord-Europe project.
+
 License
 -------
 
