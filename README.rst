@@ -4,6 +4,11 @@ Cohort Manager
 An Open edX Django plugin application for copying cohorts from one course to
 another.
 
+
+.. figure::  images/cohort_manager.png
+   :align:   center
+
+
 Setup Instructions
 ------------------
 
