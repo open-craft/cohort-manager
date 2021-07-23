@@ -4,6 +4,11 @@ Cohort Manager
 An Open edX Django plugin application for copying cohorts from one course to
 another.
 
+
+.. figure::  images/cohort_manager.png
+   :align:   center
+
+
 Setup Instructions
 ------------------
 
@@ -36,6 +41,10 @@ Test Instructions
 Run the tests from the devstack LMS shell (``make lms-shell``) using::
 
     make -f /edx/src/cohort-manager/Makefile validate
+
+Project details
+---------------
+The development was funded by Centrale Lille for an I-SITE Université Lille Nord-Europe project: https://mooc.gestiondeprojet.pm (MOOC GdP)
 
 License
 -------
