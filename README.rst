@@ -44,7 +44,7 @@ Run the tests from the devstack LMS shell (``make lms-shell``) using::
 
 Project details
 ---------------
-The development was funded by Centrale Lille for an I-SITE Université Lille Nord-Europe project.
+The development was funded by Centrale Lille for an I-SITE Université Lille Nord-Europe project: https://mooc.gestiondeprojet.pm (MOOC GdP)
 
 License
 -------
